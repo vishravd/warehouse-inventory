@@ -28,6 +28,11 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Automatically trust the Railway-injected public domain
+_railway_host = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if _railway_host and _railway_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_railway_host)
+
 
 # Application definition
 
