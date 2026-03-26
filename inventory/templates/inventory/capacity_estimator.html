@@ -1,0 +1,127 @@
+{% extends "inventory/base.html" %}
+{% block title %}Capacity Estimator{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Capacity Estimator</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <i class="bi bi-bar-chart-line"></i> Capacity Estimator
+      </div>
+      <div class="card-body p-4">
+        <p class="text-muted small">
+          Select an inventory type to see how much space is available across all storage locations.
+          Preferred storage spaces are highlighted.
+        </p>
+        <form method="get" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.inventory_type.id_for_label }}">
+              {{ form.inventory_type.label }}
+            </label>
+            {{ form.inventory_type }}
+            {% for error in form.inventory_type.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.size.id_for_label }}">
+              {{ form.size.label }}
+            </label>
+            {{ form.size }}
+            {% if form.size.help_text %}
+            <div class="form-text">{{ form.size.help_text }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-dark w-100">
+            <i class="bi bi-search"></i> Calculate
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    {% if results is not None %}
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-table"></i> Storage Availability</span>
+        {% with inv_type=form.cleaned_data.inventory_type %}
+        <span class="badge bg-secondary">{{ inv_type.name }}</span>
+        {% endwith %}
+      </div>
+
+      {% if results %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Location</th>
+              <th>Room Type</th>
+              <th class="text-end">Max</th>
+              <th class="text-end">Used</th>
+              <th class="text-end">Available</th>
+              <th class="text-end">This Type Here</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in results %}
+            <tr {% if row.is_preferred %}class="table-success"{% endif %}>
+              <td>
+                <span class="fw-semibold">{{ row.space.name }}</span>
+                <br>
+                <small class="text-muted">Shelf: {{ row.space.shelf_label }}</small>
+              </td>
+              <td>
+                {% if row.space.room_type == 'humidity_controlled' %}
+                <span class="badge bg-info text-dark">
+                  <i class="bi bi-droplet-half"></i> Humidity
+                </span>
+                {% else %}
+                <span class="badge bg-secondary">Normal</span>
+                {% endif %}
+              </td>
+              <td class="text-end">{{ row.space.max_capacity }}</td>
+              <td class="text-end">{{ row.used_capacity }}</td>
+              <td class="text-end fw-bold {% if row.available_capacity == 0 %}text-danger{% elif row.available_capacity < 10 %}text-warning{% else %}text-success{% endif %}">
+                {{ row.available_capacity }}
+              </td>
+              <td class="text-end text-muted">{{ row.items_of_type_here }}</td>
+              <td>
+                {% if row.is_preferred %}
+                <span class="badge bg-success" title="Preferred storage for this item type">
+                  <i class="bi bi-star-fill"></i> Preferred
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-muted small">
+        <i class="bi bi-star-fill text-success"></i> Highlighted rows match the preferred storage type for this item.
+      </div>
+      {% else %}
+      <div class="card-body text-muted">No storage spaces found.</div>
+      {% endif %}
+    </div>
+
+    {% else %}
+    <div class="d-flex align-items-center justify-content-center h-100 text-muted py-5">
+      <div class="text-center">
+        <i class="bi bi-bar-chart display-3"></i>
+        <p class="mt-3">Select an item type to view capacity estimates.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

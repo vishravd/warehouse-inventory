@@ -1,0 +1,88 @@
+{% extends "inventory/base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Inventory Dashboard</h3>
+    <small class="text-muted">{{ items|length }} item{{ items|length|pluralize }} tracked</small>
+  </div>
+  <div class="d-flex gap-2">
+    {% if low_stock_count %}
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+      <i class="bi bi-exclamation-triangle-fill"></i> {{ low_stock_count }} Low Stock
+    </span>
+    {% endif %}
+    <a href="{% url 'add_stock' %}" class="btn btn-dark">
+      <i class="bi bi-plus-lg"></i> Add Stock
+    </a>
+  </div>
+</div>
+
+{% if items %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>Item</th>
+          <th>Size</th>
+          <th>Location</th>
+          <th>Room Type</th>
+          <th class="text-end">Quantity</th>
+          <th class="text-end">Threshold</th>
+          <th>Last Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr {% if item.is_low_stock %}class="low-stock"{% endif %}>
+          <td>
+            <span class="fw-semibold">{{ item.inventory_type.name }}</span>
+            <br>
+            <small class="text-muted">{{ item.inventory_type.sku_prefix }}</small>
+          </td>
+          <td>{{ item.size }}</td>
+          <td>{{ item.storage_space.name }}</td>
+          <td>
+            {% if item.storage_space.room_type == 'humidity_controlled' %}
+            <span class="badge bg-info text-dark">
+              <i class="bi bi-droplet-half"></i> Humidity Controlled
+            </span>
+            {% else %}
+            <span class="badge bg-secondary">
+              <i class="bi bi-box"></i> Normal
+            </span>
+            {% endif %}
+          </td>
+          <td class="text-end fw-bold {% if item.is_low_stock %}text-danger{% endif %}">
+            {{ item.quantity }}
+            {% if item.is_low_stock %}
+            <i class="bi bi-exclamation-triangle-fill text-warning" title="Low stock"></i>
+            {% endif %}
+          </td>
+          <td class="text-end text-muted">{{ item.low_stock_threshold }}</td>
+          <td class="text-muted small">{{ item.last_updated|date:"M j, Y H:i" }}</td>
+          <td class="text-end">
+            <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="View details">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'use_stock_item' item.pk %}" class="btn btn-sm btn-outline-danger" title="Use stock">
+              <i class="bi bi-dash-circle"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+  <i class="bi bi-inbox display-3 text-muted"></i>
+  <p class="mt-3 text-muted">No inventory items yet.</p>
+  <a href="{% url 'add_stock' %}" class="btn btn-dark">Add the first item</a>
+</div>
+{% endif %}
+{% endblock %}
