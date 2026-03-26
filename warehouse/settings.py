@@ -33,6 +33,10 @@ _railway_host = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if _railway_host and _railway_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_railway_host)
 
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost").split(",")
+if _railway_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_host}")
+
 
 # Application definition
 
