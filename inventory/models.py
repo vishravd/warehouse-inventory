@@ -16,7 +16,7 @@ class StorageSpace(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return f'{self.name} — {self.shelf_label}'
 
     @property
     def used_capacity(self):
