@@ -56,6 +56,9 @@ class StockTransactionAdmin(admin.ModelAdmin):
     readonly_fields = ['timestamp']
     date_hierarchy = 'timestamp'
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class WarehouseUserAdmin(UserAdmin):
     list_display = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined']
